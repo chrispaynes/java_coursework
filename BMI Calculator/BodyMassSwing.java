@@ -27,7 +27,6 @@ public class BodyMassSwing {
     JOptionPane.showMessageDialog(null, "YOUR BODY MASS INDEX IS " + Math.round(bmi) + ".",
         "Body Mass Index Calculator", JOptionPane.PLAIN_MESSAGE);
     
-
   System.exit(0);
   }
 }
