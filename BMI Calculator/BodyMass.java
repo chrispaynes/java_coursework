@@ -1,6 +1,5 @@
 /*
   BodyMass.java calculates the body mass index based on a person's height and weight.
- 
  */
 
 import java.io.*;
