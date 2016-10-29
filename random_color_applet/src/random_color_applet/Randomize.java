@@ -1,13 +1,15 @@
+package random_color_applet;
+
 import java.awt.Color;
 import java.util.Random;
 
 public interface Randomize {
   
-  public static int newInteger(int bounds) {
+  static int newInteger(int bounds) {
     return new Random().nextInt(bounds);
   }
   
-  public static Color newRGB() {
+  static Color newRGB() {
     int r, g, b;
     r = newInteger(255);
     g = newInteger(255);
