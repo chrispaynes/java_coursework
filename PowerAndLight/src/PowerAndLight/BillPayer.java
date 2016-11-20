@@ -85,39 +85,22 @@ public class BillPayer extends JFrame implements ActionListener {
     Container c = getContentPane();
     c.setLayout((new BorderLayout()));
     fieldPanel.setLayout(new GridLayout(8, 1));
-    // FlowLayout rowSetup = new FlowLayout(FlowLayout.LEFT, 5, 3);
     
     // configure Row layouts
     for (JPanel row : rows) {
       row.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 3));
     }
     
+    addLabelsToRow(row1, acctNumLabel, pmtLabel);
+    addFieldsToRow(row2, acctNum, pmt);
+    addLabelsToRow(row3, firstNameLabel, lastNameLabel);
+    addFieldsToRow(row4, firstName, lastName);
+    addLabelsToRow(row5, addressLabel);
+    addFieldsToRow(row6, address);
+    addLabelsToRow(row7, cityLabel, stateLabel, zipLabel);
+    addFieldsToRow(row8, city, state, zip);
+    
     buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-    
-    // add fields to rows
-    row1.add(acctNumLabel);
-    row1.add(pmtLabel);
-    
-    row2.add(acctNum);
-    row2.add(pmt);
-    
-    row3.add(firstNameLabel);
-    row3.add(lastNameLabel);
-    
-    row4.add(firstName);
-    row4.add(lastName);
-    
-    row5.add(addressLabel);
-    
-    row6.add(address);
-    
-    row7.add(cityLabel);
-    row7.add(stateLabel);
-    row7.add(zipLabel);
-    
-    row8.add(city);
-    row8.add(state);
-    row8.add(zip);
     
     for (JPanel row : rows) {
       fieldPanel.add(row);
@@ -142,6 +125,16 @@ public class BillPayer extends JFrame implements ActionListener {
       }
     });
     
+  }
+  
+  private void addLabelsToRow(JPanel row, JLabel... jLabels) {
+    for (JLabel labels : jLabels)
+      row.add(labels);
+  }
+  
+  private void addFieldsToRow(JPanel row, JTextField... jTextFields) {
+    for (JTextField textFields : jTextFields)
+      row.add(textFields);
   }
   
   private void setFilename() {
