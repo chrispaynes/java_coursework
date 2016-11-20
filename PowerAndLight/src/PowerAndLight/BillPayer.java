@@ -86,10 +86,10 @@ public class BillPayer extends JFrame implements ActionListener {
     c.setLayout((new BorderLayout()));
     fieldPanel.setLayout(new GridLayout(8, 1));
     
-    // configure Row layouts
-    for (JPanel row : rows) {
-      row.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 3));
-    }
+    buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+    buttonPanel.add(submitButton);
+    
+    setRowLayouts();
     
     addLabelsToRow(row1, acctNumLabel, pmtLabel);
     addFieldsToRow(row2, acctNum, pmt);
@@ -100,13 +100,7 @@ public class BillPayer extends JFrame implements ActionListener {
     addLabelsToRow(row7, cityLabel, stateLabel, zipLabel);
     addFieldsToRow(row8, city, state, zip);
     
-    buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-    
-    for (JPanel row : rows) {
-      fieldPanel.add(row);
-    }
-    
-    buttonPanel.add(submitButton);
+    addRowsToPanel(fieldPanel);
     
     // add panels to frame
     c.add(fieldPanel, BorderLayout.CENTER);
@@ -125,6 +119,18 @@ public class BillPayer extends JFrame implements ActionListener {
       }
     });
     
+  }
+  
+  private void setRowLayouts() {
+    for (JPanel row : rows) {
+      row.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 3));
+    }
+  }
+  
+  private void addRowsToPanel(JPanel panel) {
+    for (JPanel row : rows) {
+      panel.add(row);
+    }
   }
   
   private void addLabelsToRow(JPanel row, JLabel... jLabels) {
@@ -153,16 +159,20 @@ public class BillPayer extends JFrame implements ActionListener {
     }
   }
   
+  private void writeDataToFile() throws IOException {
+    for (JTextField field : inputs) {
+      output.writeUTF(field.getText());
+    }
+    JOptionPane.showMessageDialog(null, "The payment information has been saved.", "Submission Successful",
+        JOptionPane.INFORMATION_MESSAGE);
+  }
+  
   public void actionPerformed(ActionEvent e) {
     String arg = e.getActionCommand();
     
     if (checkFieldsForInput()) {
       try {
-        for (JTextField field : inputs) {
-          output.writeUTF(field.getText());
-        }
-        JOptionPane.showMessageDialog(null, "The payment information has been saved.", "Submission Successful",
-            JOptionPane.INFORMATION_MESSAGE);
+        writeDataToFile();
       } catch (IOException f) {
         System.exit(1);
       }
