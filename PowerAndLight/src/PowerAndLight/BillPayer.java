@@ -156,7 +156,7 @@ public class BillPayer extends JFrame implements ActionListener {
   public void actionPerformed(ActionEvent e) {
     String arg = e.getActionCommand();
     
-    if (checkFields()) {
+    if (checkFieldsForInput()) {
       try {
         for (JTextField field : inputs) {
           output.writeUTF(field.getText());
@@ -176,17 +176,16 @@ public class BillPayer extends JFrame implements ActionListener {
     }
   }
   
-  public boolean checkFields() {
-    if ((acctNum.getText().compareTo("") < 1) || (pmt.getText().compareTo("") < 1)
-        || (firstName.getText().compareTo("") < 1) || (lastName.getText().compareTo("") < 1)
-        || (address.getText().compareTo("") < 1) || (city.getText().compareTo("") < 1)
-        || (state.getText().compareTo("") < 1) || (zip.getText().compareTo("") < 1)) {
-      JOptionPane.showMessageDialog(null, "You must complete all fields.", "Data Entry Error",
-          JOptionPane.WARNING_MESSAGE);
-      return false;
-    } else {
-      return true;
+  public boolean checkFieldsForInput() {
+    for (JTextField field : inputs) {
+      if (field.getText().isEmpty()) {
+        JOptionPane.showMessageDialog(null, "You must complete all fields.", "Data Entry Error",
+            JOptionPane.WARNING_MESSAGE);
+        return false;
+      }
     }
+    
+    return true;
   }
   
   public static void main(String[] args) {
@@ -199,5 +198,4 @@ public class BillPayer extends JFrame implements ActionListener {
     
     configBillPayer();
   }
-  
 }
