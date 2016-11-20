@@ -6,7 +6,13 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -136,10 +142,77 @@ public class BillPayer extends JFrame implements ActionListener {
     
     submitButton.addActionListener(this);
     
+    // Get the current date AND open the file
+    Date today = new Date();
+    SimpleDateFormat myFormat = new SimpleDateFormat("MMddyy");
+    String filename = "payments" + myFormat.format(today);
+    
+    // Opening the Data File
+    try {
+      output = new DataOutputStream(new FileOutputStream(filename));
+    } catch (IOException e) {
+      JOptionPane.showMessageDialog(null,
+          "The program could not create a storage location."
+              + "Please check the disk drive and then run the program again.",
+          "Error", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    // Closing the Data File
+    addWindowListener(new WindowAdapter() {
+      public void windowClosing(WindowEvent e) {
+        int answer = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit and submit the file?",
+            "File Submission", JOptionPane.YES_NO_OPTION);
+      }
+    });
+    
   }
   
   public void actionPerformed(ActionEvent e) {
+    String arg = e.getActionCommand();
     
+    if (checkFields()) {
+      try {
+        output.writeUTF(acctNum.getText());
+        output.writeUTF(pmt.getText());
+        output.writeUTF(firstName.getText());
+        output.writeUTF(lastName.getText());
+        output.writeUTF(address.getText());
+        output.writeUTF(city.getText());
+        output.writeUTF(state.getText());
+        output.writeUTF(zip.getText());
+        
+        JOptionPane.showMessageDialog(null, "THe payment information has been saved.", "Submission Successful",
+            JOptionPane.INFORMATION_MESSAGE);
+      } catch (IOException f) {
+        System.exit(1);
+      }
+      clearFields();
+    }
+  }
+  
+  public void clearFields() {
+    acctNum.setText("");
+    pmt.setText("");
+    firstName.setText("");
+    lastName.setText("");
+    address.setText("");
+    city.setText("");
+    state.setText("");
+    zip.setText("");
+    acctNum.requestFocus();
+  }
+  
+  public boolean checkFields() {
+    if ((acctNum.getText().compareTo("") < 1) || (pmt.getText().compareTo("") < 1)
+        || (firstName.getText().compareTo("") < 1) || (lastName.getText().compareTo("") < 1)
+        || (address.getText().compareTo("") < 1) || (city.getText().compareTo("") < 1)
+        || (state.getText().compareTo("") < 1) || (zip.getText().compareTo("") < 1)) {
+      JOptionPane.showMessageDialog(null, "You must complete all fields.", "Data Entry Error",
+          JOptionPane.WARNING_MESSAGE);
+      return false;
+    } else {
+      return true;
+    }
   }
   
 }
