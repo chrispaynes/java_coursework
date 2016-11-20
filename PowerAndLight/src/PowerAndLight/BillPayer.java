@@ -25,6 +25,7 @@ import javax.swing.UIManager;
 public class BillPayer extends JFrame implements ActionListener {
   
   DataOutputStream output;
+  String           filename;
   
   // Construct a panel for each row
   JPanel row1 = new JPanel();
@@ -35,6 +36,8 @@ public class BillPayer extends JFrame implements ActionListener {
   JPanel row6 = new JPanel();
   JPanel row7 = new JPanel();
   JPanel row8 = new JPanel();
+  
+  JPanel[] rows = new JPanel[] { row1, row2, row3, row4, row5, row6, row7, row8 };
   
   JPanel fieldPanel  = new JPanel();
   JPanel buttonPanel = new JPanel();
@@ -66,14 +69,9 @@ public class BillPayer extends JFrame implements ActionListener {
   
   JButton submitButton = new JButton("Submit");
   
-  public static void main(String[] args) {
-    try {
-      UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-    } catch (Exception e) {
-      JOptionPane.showMessageDialog(null, "The UIManager could not set the Look and Feel for this application.",
-          "Error", JOptionPane.INFORMATION_MESSAGE);
-    }
-    
+  JTextField[] inputs = new JTextField[] { acctNum, pmt, firstName, lastName, address, city, state, zip, acctNum };
+  
+  private static void configBillPayer() {
     BillPayer f = new BillPayer();
     f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     f.setSize(450, 300);
@@ -81,22 +79,19 @@ public class BillPayer extends JFrame implements ActionListener {
     f.setResizable(false);
     f.setLocation(200, 200);
     f.setVisible(true);
-    
   }
   
   public BillPayer() {
     Container c = getContentPane();
     c.setLayout((new BorderLayout()));
     fieldPanel.setLayout(new GridLayout(8, 1));
-    FlowLayout rowSetup = new FlowLayout(FlowLayout.LEFT, 5, 3);
-    row1.setLayout(rowSetup);
-    row2.setLayout(rowSetup);
-    row3.setLayout(rowSetup);
-    row4.setLayout(rowSetup);
-    row5.setLayout(rowSetup);
-    row6.setLayout(rowSetup);
-    row7.setLayout(rowSetup);
-    row8.setLayout(rowSetup);
+    // FlowLayout rowSetup = new FlowLayout(FlowLayout.LEFT, 5, 3);
+    
+    // configure Row layouts
+    for (JPanel row : rows) {
+      row.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 3));
+    }
+    
     buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
     
     // add fields to rows
@@ -124,15 +119,9 @@ public class BillPayer extends JFrame implements ActionListener {
     row8.add(state);
     row8.add(zip);
     
-    // add rows to panel
-    fieldPanel.add(row1);
-    fieldPanel.add(row2);
-    fieldPanel.add(row3);
-    fieldPanel.add(row4);
-    fieldPanel.add(row5);
-    fieldPanel.add(row6);
-    fieldPanel.add(row7);
-    fieldPanel.add(row8);
+    for (JPanel row : rows) {
+      fieldPanel.add(row);
+    }
     
     buttonPanel.add(submitButton);
     
@@ -142,20 +131,8 @@ public class BillPayer extends JFrame implements ActionListener {
     
     submitButton.addActionListener(this);
     
-    // Get the current date AND open the file
-    Date today = new Date();
-    SimpleDateFormat myFormat = new SimpleDateFormat("MMddyy");
-    String filename = "payments" + myFormat.format(today);
-    
-    // Opening the Data File
-    try {
-      output = new DataOutputStream(new FileOutputStream(filename));
-    } catch (IOException e) {
-      JOptionPane.showMessageDialog(null,
-          "The program could not create a storage location."
-              + "Please check the disk drive and then run the program again.",
-          "Error", JOptionPane.INFORMATION_MESSAGE);
-    }
+    setFilename();
+    openDataFile();
     
     // Closing the Data File
     addWindowListener(new WindowAdapter() {
@@ -167,39 +144,43 @@ public class BillPayer extends JFrame implements ActionListener {
     
   }
   
+  private void setFilename() {
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MMddyy");
+    filename = "payments" + dateFormat.format(new Date());
+  }
+  
+  private void openDataFile() {
+    try {
+      output = new DataOutputStream(new FileOutputStream(filename));
+    } catch (IOException e) {
+      JOptionPane.showMessageDialog(null,
+          "The program could not create a storage location."
+              + "Please check the disk drive and then run the program again.",
+          "Error", JOptionPane.INFORMATION_MESSAGE);
+    }
+  }
+  
   public void actionPerformed(ActionEvent e) {
     String arg = e.getActionCommand();
     
     if (checkFields()) {
       try {
-        output.writeUTF(acctNum.getText());
-        output.writeUTF(pmt.getText());
-        output.writeUTF(firstName.getText());
-        output.writeUTF(lastName.getText());
-        output.writeUTF(address.getText());
-        output.writeUTF(city.getText());
-        output.writeUTF(state.getText());
-        output.writeUTF(zip.getText());
-        
-        JOptionPane.showMessageDialog(null, "THe payment information has been saved.", "Submission Successful",
+        for (JTextField field : inputs) {
+          output.writeUTF(field.getText());
+        }
+        JOptionPane.showMessageDialog(null, "The payment information has been saved.", "Submission Successful",
             JOptionPane.INFORMATION_MESSAGE);
       } catch (IOException f) {
         System.exit(1);
       }
-      clearFields();
+      clearInputFields();
     }
   }
   
-  public void clearFields() {
-    acctNum.setText("");
-    pmt.setText("");
-    firstName.setText("");
-    lastName.setText("");
-    address.setText("");
-    city.setText("");
-    state.setText("");
-    zip.setText("");
-    acctNum.requestFocus();
+  public void clearInputFields() {
+    for (JTextField field : inputs) {
+      field.setText("");
+    }
   }
   
   public boolean checkFields() {
@@ -213,6 +194,17 @@ public class BillPayer extends JFrame implements ActionListener {
     } else {
       return true;
     }
+  }
+  
+  public static void main(String[] args) {
+    try {
+      UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+    } catch (Exception e) {
+      JOptionPane.showMessageDialog(null, "The UIManager could not set the Look and Feel for this application.",
+          "Error", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    configBillPayer();
   }
   
 }
