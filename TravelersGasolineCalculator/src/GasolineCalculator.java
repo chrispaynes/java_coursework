@@ -5,6 +5,7 @@ import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Label;
 import java.awt.Panel;
@@ -16,49 +17,61 @@ import java.awt.event.ItemListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 public class GasolineCalculator extends Applet implements ActionListener, ItemListener {
   Image  companyLogo;
   String gasolineType, vehicleType;
   double tripDistance, gasCost, total, milesPerGallon;
   
-  Panel headerPanel, centerHeaderPanel;
-  Panel footerPanel, buttonPanel, outputPanel;
-  Panel userInputNorthPanel, userInputPanel, inputPanel, gasPricePanel;
-  Panel tripDistancePanel, vehicleTypePanel, gasolineTypePanel;
+  Panel  centerHeaderPanel;
+  JPanel headerPanel;
+  JPanel footerPanel, buttonPanel, outputPanel;
+  JPanel userInputPanel;
+  JPanel tripDistancePanel, vehicleTypePanel, gasolineTypePanel, beginningLocationsPanel, destinationLocationsPanel;
   
   Label applicationNameLabel = new Label("Traveler's Gasoline Calculator", Label.CENTER);
-  Label addressLabel         = new Label("410 Terry Avenue North, Seattle, WA, 98109", Label.CENTER);
-  Label descriptionLabel     = new Label(
+  
+  Label addressLabel              = new Label("410 Terry Avenue North, Seattle, WA, 98109", Label.CENTER);
+  Label descriptionLabel          = new Label(
       "<html>The Traveler's Gasoline Calculator allows users to enter values for the number of miles, the number of gallons, and the cost of gasoline. <br>It also enables users to reset the value on the screen to zero (0) so that another calculation can be performed.</html>",
       Label.CENTER);
-  Label promptLabel          = new Label("Please enter your Trip Distance, Vehicle Type and Gasoline Type below: \n",
-      Label.CENTER);
-  Label tripDistanceLabel    = new Label("Trip Distance", Label.RIGHT);
-  Label vehicleTypeLabel     = new Label("Vehicle Type", Label.RIGHT);
-  Label gasolineTypeLabel    = new Label("gasolineType", Label.RIGHT);
-  Label travelCostLabel      = new Label("Your estimated Travel Cost is:");
-  Label outputLabel          = new Label("Click the Calculate button to see your total travel cost");
-  Label calculationLabel     = new Label();
-  Label gasCostLabel         = new Label("Cost of Gas", Label.RIGHT);
+  Label promptLabel               = new Label(
+      "Please enter your Trip Distance, Vehicle Type and Gasoline Type below: \n", Label.CENTER);
+  Label tripDistanceLabel         = new Label("Trip Distance", Label.RIGHT);
+  Label vehicleTypeLabel          = new Label("Vehicle Type", Label.RIGHT);
+  Label gasolineTypeLabel         = new Label("gasolineType", Label.RIGHT);
+  Label travelCostLabel           = new Label("Your estimated Travel Cost is:");
+  Label outputLabel               = new Label("Click the Calculate button to see your total travel cost");
+  Label calculationLabel          = new Label();
+  Label gasCostLabel              = new Label("Cost of Gas", Label.RIGHT);
+  Label beginningLocationsLabel   = new Label("Starting Location", Label.RIGHT);
+  Label destinationLocationsLabel = new Label("Destination", Label.RIGHT);
   
   TextField gasCostField      = new TextField(10);
   TextField tripDistanceField = new TextField(10);
   
-  Button calculateButton = new Button("Calculate");
-  Button resetButton     = new Button("Reset");
+  Button submitButton = new Button("Submit");
+  Button clearButton  = new Button("Clear");
   
-  Choice   gasDropdown     = new Choice();
-  Choice   vehicleDropdown = new Choice();
-  String[] gasOptions      = new String[] { "Leaded", "Unleaded", "Super Unleaded", "Diesel" };
-  String[] vehicleOptions  = new String[] { "Compact", "Mid-Size", "Luxury", "SUV" };
+  Choice   gasDropdown                  = new Choice();
+  Choice   vehicleDropdown              = new Choice();
+  Choice   beginningLocationsDropdown   = new Choice();
+  Choice   destinationLocationsDropdown = new Choice();
+  String[] gasOptions                   = new String[] { "Leaded", "Unleaded", "Super Unleaded", "Diesel" };
+  String[] vehicleOptions               = new String[] { "Compact", "Mid-Size", "Luxury", "SUV" };
+  String[] beginningLocationsOptions    = new String[] { "Seattle", "Portland", "San Franciso", "Denver", "Minneapolis",
+      "Chicago", "Miami", "Philadelphia", "New York City", "Boston" };
+  String[] destinationLocationsOptions  = new String[] { "Seattle", "Portland", "San Franciso", "Denver", "Minneapolis",
+      "Chicago", "Miami", "Philadelphia", "New York City", "Boston" };
   
   public void init() {
     milesPerGallon = 15.00;
     populateMenuOptions(gasDropdown, gasOptions);
     populateMenuOptions(vehicleDropdown, vehicleOptions);
+    populateMenuOptions(beginningLocationsDropdown, beginningLocationsOptions);
+    populateMenuOptions(destinationLocationsDropdown, destinationLocationsOptions);
     this.setLayout(new BorderLayout());
-    setBackground(new Color(211, 211, 211));
     
     configureHeaderPanel();
     configureUserInputPanels();
@@ -68,32 +81,15 @@ public class GasolineCalculator extends Applet implements ActionListener, ItemLi
     add(userInputPanel, BorderLayout.CENTER);
     add(footerPanel, BorderLayout.SOUTH);
     
-    calculateButton.addActionListener(this);
-    resetButton.addActionListener(this);
+    submitButton.addActionListener(this);
+    clearButton.addActionListener(this);
     vehicleDropdown.addItemListener(this);
     gasDropdown.addItemListener(this);
     
   }
   
-  public void configureFooterPanel() {
-    footerPanel = new Panel(new BorderLayout());
-    buttonPanel = new Panel(new BorderLayout());
-    outputPanel = new Panel(new BorderLayout());
-    
-    outputPanel.add(travelCostLabel);
-    outputPanel.add(calculationLabel);
-    footerPanel.add(outputPanel, BorderLayout.NORTH);
-    calculationLabel.setAlignment(WIDTH);
-    footerPanel.add(calculationLabel, BorderLayout.CENTER);
-    calculateButton.setForeground(Color.green);
-    buttonPanel.add(calculateButton, BorderLayout.WEST);
-    resetButton.setForeground(Color.red);
-    buttonPanel.add(resetButton, BorderLayout.EAST);
-    footerPanel.add(buttonPanel, BorderLayout.SOUTH);
-  }
-  
   public void configureHeaderPanel() {
-    headerPanel = new Panel(new BorderLayout());
+    headerPanel = new JPanel(new BorderLayout());
     centerHeaderPanel = new Panel(new BorderLayout());
     
     Font appHeaderFont = new Font("Verdana", Font.BOLD, 24);
@@ -108,36 +104,54 @@ public class GasolineCalculator extends Applet implements ActionListener, ItemLi
     headerPanel.add(descriptionLabel, BorderLayout.SOUTH);
   }
   
+  public void configureFooterPanel() {
+    footerPanel = new JPanel(new GridLayout(3, 1));
+    buttonPanel = new JPanel(new GridLayout(1, 2));
+    outputPanel = new JPanel(new BorderLayout());
+    
+    outputPanel.add(travelCostLabel);
+    outputPanel.add(calculationLabel);
+    calculationLabel.setAlignment(WIDTH);
+    
+    submitButton.setForeground(Color.green);
+    clearButton.setForeground(Color.red);
+    buttonPanel.add(submitButton);
+    buttonPanel.add(clearButton);
+    
+    footerPanel.add(outputPanel);
+    footerPanel.add(calculationLabel);
+    footerPanel.add(buttonPanel);
+    
+  }
+  
   public void configureUserInputPanels() {
-    userInputPanel = new Panel(new BorderLayout());
-    inputPanel = new Panel();
-    userInputNorthPanel = new Panel(new BorderLayout());
+    JPanel gasPanel = new JPanel(new GridLayout(2, 2));
+    JPanel tripPanel = new JPanel(new GridLayout(3, 2));
+    JPanel vehiclePanel = new JPanel(new GridLayout(1, 2));
+    JPanel inputPanel = new JPanel();
+    userInputPanel = new JPanel(new GridLayout(2, 1));
     
-    tripDistancePanel = new Panel();
-    tripDistancePanel.add(tripDistanceLabel);
-    tripDistancePanel.add(tripDistanceField);
+    gasPanel.add(gasCostLabel);
+    gasPanel.add(gasCostField);
+    gasPanel.add(gasolineTypeLabel);
+    gasPanel.add(gasDropdown);
     
-    gasPricePanel = new Panel();
-    gasPricePanel.add(gasCostLabel);
-    gasPricePanel.add(gasCostField);
+    tripPanel.add(tripDistanceLabel);
+    tripPanel.add(tripDistanceField);
+    tripPanel.add(beginningLocationsLabel);
+    tripPanel.add(beginningLocationsDropdown);
+    tripPanel.add(destinationLocationsLabel);
+    tripPanel.add(destinationLocationsDropdown);
     
-    userInputNorthPanel.add(tripDistancePanel, BorderLayout.NORTH);
-    userInputNorthPanel.add(gasPricePanel, BorderLayout.CENTER);
+    vehiclePanel.add(vehicleTypeLabel);
+    vehiclePanel.add(vehicleDropdown);
     
-    vehicleTypePanel = new Panel();
-    vehicleTypePanel.add(vehicleTypeLabel);
-    vehicleTypePanel.add(vehicleDropdown);
+    inputPanel.add(tripPanel);
+    inputPanel.add(vehiclePanel);
+    inputPanel.add(gasPanel);
     
-    gasolineTypePanel = new Panel();
-    gasolineTypePanel.add(gasolineTypeLabel);
-    gasolineTypePanel.add(gasDropdown);
-    
-    inputPanel.add(userInputNorthPanel, BorderLayout.NORTH);
-    inputPanel.add(vehicleTypePanel, BorderLayout.CENTER);
-    inputPanel.add(gasolineTypePanel, BorderLayout.SOUTH);
-    
-    userInputPanel.add(promptLabel, BorderLayout.NORTH);
-    userInputPanel.add(inputPanel, BorderLayout.CENTER);
+    userInputPanel.add(promptLabel);
+    userInputPanel.add(inputPanel);
   }
   
   public void populateMenuOptions(Choice menu, String[] options) {
@@ -147,14 +161,14 @@ public class GasolineCalculator extends Applet implements ActionListener, ItemLi
   };
   
   public void actionPerformed(ActionEvent e) {
-    if (e.getSource() == calculateButton) {
+    if (e.getSource() == submitButton) {
       tripDistance = Double.parseDouble(tripDistanceField.getText());
       vehicleType = vehicleDropdown.getSelectedItem();
       gasolineType = gasDropdown.getSelectedItem();
       gasCost = Double.parseDouble(gasCostField.getText());
       resetUserInputs();
       
-    } else if (e.getSource() == resetButton) {
+    } else if (e.getSource() == clearButton) {
       resetUserInputs();
     }
     total = calculateTravelersCost(tripDistance, milesPerGallon, gasCost);
@@ -166,7 +180,7 @@ public class GasolineCalculator extends Applet implements ActionListener, ItemLi
     gasCostField.setText(" ");
     vehicleDropdown.select(0);
     gasDropdown.select(0);
-    
+    calculationLabel.setText(" ");
   }
   
   public void outputTravelersCost(double tripDistance, String vehicleType, double total) {
