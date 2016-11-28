@@ -1,10 +1,8 @@
-import java.applet.Applet;
 import java.awt.BorderLayout;
 import java.awt.Button;
 import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Label;
@@ -16,13 +14,18 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.ImageIcon;
+import javax.swing.JApplet;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
-public class GasolineCalculator extends Applet implements ActionListener, ItemListener {
-  Image  companyLogo;
-  String gasolineType, vehicleType;
-  double tripDistance, gasCost, total, milesPerGallon;
+public class GasolineCalculator extends JApplet implements ActionListener, ItemListener {
+  private static final long serialVersionUID = 7185982631853967288L;
+  JFrame                    jf;
+  Image                     companyLogo;
+  String                    gasolineType, vehicleType;
+  double                    tripDistance, gasCost, total, milesPerGallon;
   
   Panel  centerHeaderPanel;
   JPanel headerPanel;
@@ -48,8 +51,8 @@ public class GasolineCalculator extends Applet implements ActionListener, ItemLi
   Label beginningLocationsLabel   = new Label("Starting Location", Label.RIGHT);
   Label destinationLocationsLabel = new Label("Destination", Label.RIGHT);
   
-  TextField gasCostField      = new TextField(10);
-  TextField tripDistanceField = new TextField(10);
+  JTextField gasCostField      = new JTextField(10);
+  TextField  tripDistanceField = new TextField(10);
   
   Button submitButton = new Button("Submit");
   Button clearButton  = new Button("Clear");
@@ -66,20 +69,25 @@ public class GasolineCalculator extends Applet implements ActionListener, ItemLi
       "Chicago", "Miami", "Philadelphia", "New York City", "Boston" };
   
   public void init() {
+    jf = new JFrame();
+    jf.setLayout(new GridLayout(3, 1));
+    
     milesPerGallon = 15.00;
     populateMenuOptions(gasDropdown, gasOptions);
     populateMenuOptions(vehicleDropdown, vehicleOptions);
     populateMenuOptions(beginningLocationsDropdown, beginningLocationsOptions);
     populateMenuOptions(destinationLocationsDropdown, destinationLocationsOptions);
-    this.setLayout(new BorderLayout());
     
     configureHeaderPanel();
     configureUserInputPanels();
     configureFooterPanel();
     
-    add(headerPanel, BorderLayout.NORTH);
-    add(userInputPanel, BorderLayout.CENTER);
-    add(footerPanel, BorderLayout.SOUTH);
+    jf.add(headerPanel);
+    jf.add(userInputPanel);
+    jf.add(footerPanel);
+    
+    jf.pack();
+    jf.setVisible(true);
     
     submitButton.addActionListener(this);
     clearButton.addActionListener(this);
@@ -215,10 +223,6 @@ public class GasolineCalculator extends Applet implements ActionListener, ItemLi
     }
     
     return costPerGallon;
-  }
-  
-  public void paint(Graphics g) {
-    
   }
   
   @Override
