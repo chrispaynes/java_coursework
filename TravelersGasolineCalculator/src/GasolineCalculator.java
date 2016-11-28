@@ -41,13 +41,13 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
       Label.CENTER);
   Label promptLabel               = new Label(
       "Please enter your Trip Distance, Vehicle Type and Gasoline Type below: \n", Label.CENTER);
-  Label tripDistanceLabel         = new Label("Trip Distance", Label.RIGHT);
+  Label tripDistanceLabel         = new Label("Approximate Miles", Label.RIGHT);
   Label vehicleTypeLabel          = new Label("Vehicle Type", Label.RIGHT);
   Label gasolineTypeLabel         = new Label("gasolineType", Label.RIGHT);
-  Label travelCostLabel           = new Label("Your estimated Travel Cost is:");
-  Label outputLabel               = new Label("Click the Calculate button to see your total travel cost");
+  Label travelCostLabel           = new Label("Your estimated Travel Cost is:", Label.CENTER);
+  Label outputLabel               = new Label("Click the Submit button to see your total travel cost", Label.CENTER);
   Label calculationLabel          = new Label();
-  Label gasCostLabel              = new Label("Cost of Gas", Label.RIGHT);
+  Label gasCostLabel              = new Label("Cost of Gas/Gallon", Label.RIGHT);
   Label beginningLocationsLabel   = new Label("Starting Location", Label.RIGHT);
   Label destinationLocationsLabel = new Label("Destination", Label.RIGHT);
   
@@ -97,28 +97,30 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   }
   
   public void configureHeaderPanel() {
-    headerPanel = new JPanel(new BorderLayout());
+    headerPanel = new JPanel(new GridLayout(3, 1));
     centerHeaderPanel = new Panel(new BorderLayout());
     
     Font appHeaderFont = new Font("Verdana", Font.BOLD, 24);
-    companyLogo = getImage(getDocumentBase(), "../resources/companyLogo.jpg");
-    JLabel picLabel = new JLabel(new ImageIcon(companyLogo));
+    ImageIcon companyLogo = new ImageIcon("../resources/companyLogo.jpg");
+    JLabel picLabel = new JLabel(companyLogo);
     
     applicationNameLabel.setFont(appHeaderFont);
-    headerPanel.add(applicationNameLabel, BorderLayout.NORTH);
+    headerPanel.add(applicationNameLabel);
     centerHeaderPanel.add(picLabel, BorderLayout.NORTH);
-    centerHeaderPanel.add(addressLabel, BorderLayout.CENTER);
-    headerPanel.add(centerHeaderPanel, BorderLayout.CENTER);
-    headerPanel.add(descriptionLabel, BorderLayout.SOUTH);
+    centerHeaderPanel.add(addressLabel, BorderLayout.SOUTH);
+    headerPanel.add(centerHeaderPanel);
+    headerPanel.add(descriptionLabel);
   }
   
   public void configureFooterPanel() {
     footerPanel = new JPanel(new GridLayout(3, 1));
     buttonPanel = new JPanel(new GridLayout(1, 2));
-    outputPanel = new JPanel(new BorderLayout());
+    outputPanel = new JPanel(new GridLayout(3, 1));
     
-    outputPanel.add(travelCostLabel);
     outputPanel.add(calculationLabel);
+    outputPanel.add(outputLabel);
+    outputPanel.add(travelCostLabel);
+    
     calculationLabel.setAlignment(WIDTH);
     
     submitButton.setForeground(Color.green);
