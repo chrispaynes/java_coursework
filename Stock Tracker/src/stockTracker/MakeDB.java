@@ -1,5 +1,10 @@
 package stockTracker;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -9,7 +14,7 @@ import java.sql.Statement;
 
 public class MakeDB {
   
-  public static void main(String[] args) throws ClassNotFoundException, SQLException {
+  public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
     Connection connection = null;
     
     try {
@@ -144,42 +149,49 @@ public class MakeDB {
       buf = rs.getBytes("pswd");
       if (buf != null) {
         System.out.println("PASSWORD OBJECT = " + (pswdFromDB = (Password) deserializeObj(buf)));
-        System.out.println(" AUTO EXPIRES =" + pswdFromDB.getAutoExpires());
-        System.out.println(" EXPIRING NOW =" + pswdFromDB.isExpiring());
-        System.out.println(" REMAINING USES =" + pswdFromDB.getRemainingUses() + "\n");
+        System.out.println("AUTO EXPIRES = " + pswdFromDB.getAutoExpires());
+        System.out.println("EXPIRING NOW = " + pswdFromDB.isExpiring());
+        System.out.println("REMAINING USES = " + pswdFromDB.getRemainingUses() + "\n");
       } else {
         System.out.println("Password Object = Null!");
       }
     }
     
-    //
-    // try {
-    // System.out.println("");
-    // stmt.executeUpdate("");
-    // } catch (Exception e) {
-    // System.out.println(""+ e.getMessage());
-    // }
+    rs = stmt.executeQuery("SELECT * FROM stocks");
+    if (!rs.next()) {
+      System.out.println("Stocks table contains no records");
+    } else {
+      System.out.println("Stocks table still contains records!");
+    }
     
-    //
-    // try {
-    // System.out.println("");
-    // stmt.executeUpdate("");
-    // } catch (Exception e) {
-    // System.out.println(""+ e.getMessage());
-    // }
-    
-    // connection.close();
-    
+    rs = stmt.executeQuery("SELECT * FROM userstocks");
+    if (!rs.next()) {
+      System.out.println("UserStocks table contains no records");
+    } else {
+      System.out.println("UserStocks table still contains records!");
+    }
   }
   
-  private static Password deserializeObj(byte[] buf) {
-    // TODO Auto-generated method stub
-    return null;
+  // Writes object to byte array then inserts into prepared statement
+  private static byte[] serializeObj(Object obj) throws IOException {
+    ByteArrayOutputStream baOStream = new ByteArrayOutputStream();
+    ObjectOutputStream objOStream = new ObjectOutputStream(baOStream);
+    
+    objOStream.writeObject(obj);
+    objOStream.flush();
+    objOStream.close();
+    return baOStream.toByteArray();
   }
   
-  private static byte[] serializeObj(Password pswd) {
-    // TODO Auto-generated method stub
-    return null;
+  // Reads bytes from result set into byte array
+  // Creates input stream and read the data into an object
+  private static Object deserializeObj(byte[] buf) throws IOException, ClassNotFoundException {
+    Object obj = null;
+    if (buf != null) {
+      ObjectInputStream objIStream = new ObjectInputStream(new ByteArrayInputStream(buf));
+      obj = objIStream.readObject();
+    }
+    return obj;
   }
   
 }
