@@ -19,13 +19,26 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 public class GasolineCalculator extends JApplet implements ActionListener, ItemListener {
+  // Create an interface with the motif look and feel that allows the user to
+  // enter and record trips taken and store them in a data file on a floppy;
+  // disk.
+  // Fields should include:
+  //
+  // Trip date
+  // Start destination
+  // Ending destination
+  // Mileage
+  // Cost
   private static final long serialVersionUID = 7185982631853967288L;
   JFrame                    jf;
   Image                     companyLogo;
   String                    gasolineType, vehicleType;
   double                    tripDistance, gasCost, total, milesPerGallon;
+  final static String       LOOKANDFEEL      = "com.sun.java.swing.plaf.motif.MotifLookAndFeel";
   
   Panel  centerHeaderPanel;
   JPanel headerPanel;
@@ -41,19 +54,20 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
       Label.CENTER);
   Label promptLabel               = new Label(
       "Please enter your Trip Distance, Vehicle Type and Gasoline Type below: \n", Label.CENTER);
-  Label tripDistanceLabel         = new Label("Approximate Miles", Label.RIGHT);
-  Label vehicleTypeLabel          = new Label("Vehicle Type", Label.RIGHT);
-  Label gasolineTypeLabel         = new Label("gasolineType", Label.RIGHT);
+  Label tripDistanceLabel         = new Label("Approximate Miles ", Label.RIGHT);
+  Label vehicleTypeLabel          = new Label("Vehicle Type ", Label.RIGHT);
+  Label gasolineTypeLabel         = new Label("gasolineType ", Label.RIGHT);
   Label travelCostLabel           = new Label("Your estimated Travel Cost is:", Label.CENTER);
   Label outputLabel               = new Label("Click the Submit button to see your total travel cost", Label.CENTER);
   Label calculationLabel          = new Label();
-  Label gasCostLabel              = new Label("Cost of Gas/Gallon", Label.RIGHT);
-  Label beginningLocationsLabel   = new Label("Starting Location", Label.RIGHT);
-  Label destinationLocationsLabel = new Label("Destination", Label.RIGHT);
+  Label gasCostLabel              = new Label("Cost of Gas/Gallon ", Label.RIGHT);
+  Label beginningLocationsLabel   = new Label("Starting Location ", Label.RIGHT);
+  Label destinationLocationsLabel = new Label("Destination ", Label.RIGHT);
   
   JTextField gasCostField      = new JTextField(10);
   TextField  tripDistanceField = new TextField(10);
   
+  Button saveButton   = new Button("Save Calculation");
   Button submitButton = new Button("Submit");
   Button clearButton  = new Button("Clear");
   
@@ -72,7 +86,29 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     jf = new JFrame();
     jf.setLayout(new GridLayout(3, 1));
     
+    try {
+      UIManager.setLookAndFeel(LOOKANDFEEL);
+    } catch (ClassNotFoundException cnfe) {
+      cnfe.printStackTrace();
+      System.err.println("Couldn't find class for specified look and feel: " + LOOKANDFEEL);
+      System.err.println("Using the default look and feel.");
+    } catch (InstantiationException ie) {
+      ie.printStackTrace();
+      System.err.println("Couldn't create a new instance for specified look and feel: " + LOOKANDFEEL);
+      System.err.println("Using the default look and feel.");
+    } catch (IllegalAccessException iae) {
+      iae.printStackTrace();
+      System.err.println(
+          "Couldn't access the class, field, method or constructor associated with look and feel: " + LOOKANDFEEL);
+      System.err.println("Using the default look and feel.");
+    } catch (UnsupportedLookAndFeelException ulfe) {
+      ulfe.printStackTrace();
+      System.err.println("The requested look and feel: " + LOOKANDFEEL + " is not present on your system");
+      System.err.println("Using the default look and feel.");
+    }
+    
     milesPerGallon = 15.00;
+    
     populateMenuOptions(gasDropdown, gasOptions);
     populateMenuOptions(vehicleDropdown, vehicleOptions);
     populateMenuOptions(beginningLocationsDropdown, beginningLocationsOptions);
@@ -124,8 +160,10 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     calculationLabel.setAlignment(WIDTH);
     
     submitButton.setForeground(Color.green);
+    saveButton.setForeground(Color.blue);
     clearButton.setForeground(Color.red);
     buttonPanel.add(submitButton);
+    buttonPanel.add(saveButton);
     buttonPanel.add(clearButton);
     
     footerPanel.add(outputPanel);
