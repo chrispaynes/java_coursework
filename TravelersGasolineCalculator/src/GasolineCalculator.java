@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.Panel;
-import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -14,6 +13,8 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +30,8 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class GasolineCalculator extends JApplet implements ActionListener, ItemListener {
   private static final long   serialVersionUID = 7185982631853967288L;
   private JFrame              jf;
-  double                      tripDistance, gasCost, total, milesPerGallon;
+  double                      tripDistance, gasCost, milesPerGallon;
+  String                      total;
   private final static String LOOKANDFEEL      = "com.sun.java.swing.plaf.motif.MotifLookAndFeel";
   
   JPanel headerPanel;
@@ -57,7 +59,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   Label destinationLocationsLabel = new Label("Destination ", Label.RIGHT);
   
   JTextField gasCostField      = new JTextField(10);
-  TextField  tripDistanceField = new TextField(10);
+  JTextField tripDistanceField = new JTextField(10);
   
   Button saveButton   = new Button("Save Travel Record");
   Button submitButton = new Button("Submit");
@@ -78,7 +80,6 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     jf = new JFrame();
     jf.setLayout(new GridLayout(3, 1));
     milesPerGallon = 15.00;
-    
     setUILook();
     populateMenuOptions(gasDropdown, gasOptions);
     populateMenuOptions(vehicleDropdown, vehicleOptions);
@@ -101,6 +102,9 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     clearButton.addActionListener(this);
     vehicleDropdown.addItemListener(this);
     gasDropdown.addItemListener(this);
+    
+    resize(300, 150);
+    
   }
   
   private void setUILook() {
@@ -167,7 +171,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   }
   
   private void configureUserInputPanels() {
-    JPanel gasPanel = new JPanel(new GridLayout(2, 2));
+    JPanel gasPanel = new JPanel(new GridLayout(3, 2));
     JPanel tripPanel = new JPanel(new GridLayout(3, 2));
     JPanel vehiclePanel = new JPanel(new GridLayout(1, 2));
     JPanel inputPanel = new JPanel();
@@ -234,15 +238,22 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   private void writeDataToFile() throws IOException {
     FileWriter fw = null;
     File textDB = new File("travelrecords.txt");
-    textDB.getAbsolutePath();
+    
     try {
       fw = new FileWriter(textDB, true);
-      fw.write("Hello World1\n");
-      // Trip Date
-      // Starting Location: get
-      // Destination = get
-      // Approximate Miles = get
-      // Cost
+      Date tripDate = new Date();
+      String startingLocation = beginningLocationsDropdown.getSelectedItem();
+      String destination = destinationLocationsDropdown.getSelectedItem();
+      String approxMiles = tripDistanceField.getText();
+      String cost = calculationLabel.getText();
+      
+      fw.write("=====================================\n");
+      fw.write("date: " + tripDate + "\n");
+      fw.write("startingLocation: " + startingLocation + "\n");
+      fw.write("destination: " + destination + "\n");
+      fw.write("approxMiles: " + approxMiles + "\n");
+      fw.write("cost: " + cost + "\n");
+      
       flashLabel.setText("Successfully saved your travel record to " + textDB.getPath());
     } catch (IOException e) {
       flashLabel.setText("Could not save travel record to a file");
@@ -260,13 +271,15 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     flashLabel.setText("");
   }
   
-  private void outputTravelersCost(double tripDistance, String vehicleType, double total) {
-    calculationLabel.setText("$" + total);
+  private void outputTravelersCost(double tripDistance, String vehicleType, String total) {
+    calculationLabel.setText(total);
   };
   
-  private Double calculateTravelersCost(double tripDistance, double milesPerGallon, double gasCost) {
+  private String calculateTravelersCost(double tripDistance, double milesPerGallon, double gasCost) {
     Double totalOilChangeCost = calculateOilChangeCost(tripDistance);
-    return ((tripDistance / milesPerGallon) * gasCost) + totalOilChangeCost;
+    NumberFormat formatter = NumberFormat.getCurrencyInstance();
+    
+    return formatter.format(((tripDistance / milesPerGallon) * gasCost) + totalOilChangeCost);
   };
   
   private Double calculateOilChangeCost(double distance) {
