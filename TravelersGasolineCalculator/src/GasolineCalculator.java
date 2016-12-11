@@ -4,7 +4,6 @@ import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Label;
 import java.awt.Panel;
 import java.awt.TextField;
@@ -15,6 +14,8 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JApplet;
@@ -26,26 +27,13 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 public class GasolineCalculator extends JApplet implements ActionListener, ItemListener {
-  // Create an interface with the motif look and feel that allows the user to
-  // enter and record trips taken and store them in a data file on a floppy;
-  // disk.
-  // Fields should include:
-  //
-  // Trip date
-  // Start destination
-  // Ending destination
-  // Mileage
-  // Cost
-  private static final long serialVersionUID = 7185982631853967288L;
-  JFrame                    jf;
-  Image                     companyLogo;
-  String                    gasolineType, vehicleType;
-  double                    tripDistance, gasCost, total, milesPerGallon;
-  final static String       LOOKANDFEEL      = "com.sun.java.swing.plaf.motif.MotifLookAndFeel";
+  private static final long   serialVersionUID = 7185982631853967288L;
+  private JFrame              jf;
+  double                      tripDistance, gasCost, total, milesPerGallon;
+  private final static String LOOKANDFEEL      = "com.sun.java.swing.plaf.motif.MotifLookAndFeel";
   
-  Panel  centerHeaderPanel;
   JPanel headerPanel;
-  JPanel footerPanel, buttonPanel, outputPanel;
+  JPanel footerPanel;
   JPanel userInputPanel;
   JPanel tripDistancePanel, vehicleTypePanel, gasolineTypePanel, beginningLocationsPanel, destinationLocationsPanel;
   
@@ -91,7 +79,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     jf.setLayout(new GridLayout(3, 1));
     milesPerGallon = 15.00;
     
-    setLook();
+    setUILook();
     populateMenuOptions(gasDropdown, gasOptions);
     populateMenuOptions(vehicleDropdown, vehicleOptions);
     populateMenuOptions(beginningLocationsDropdown, beginningLocationsOptions);
@@ -115,7 +103,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     gasDropdown.addItemListener(this);
   }
   
-  private void setLook() {
+  private void setUILook() {
     try {
       UIManager.setLookAndFeel(LOOKANDFEEL);
     } catch (ClassNotFoundException cnfe) {
@@ -136,11 +124,11 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
       System.err.println("The requested look and feel: " + LOOKANDFEEL + " is not present on your system");
       System.err.println("Using the default look and feel.");
     }
-  };
+  }
   
-  public void configureHeaderPanel() {
+  private void configureHeaderPanel() {
     headerPanel = new JPanel(new GridLayout(3, 1));
-    centerHeaderPanel = new Panel(new BorderLayout());
+    Panel centerHeaderPanel = new Panel(new BorderLayout());
     
     Font appHeaderFont = new Font("Verdana", Font.BOLD, 24);
     ImageIcon companyLogo = new ImageIcon("../resources/companyLogo.jpg");
@@ -154,10 +142,10 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     headerPanel.add(descriptionLabel);
   }
   
-  public void configureFooterPanel() {
+  private void configureFooterPanel() {
+    JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
+    JPanel outputPanel = new JPanel(new GridLayout(4, 1));
     footerPanel = new JPanel(new GridLayout(3, 1));
-    buttonPanel = new JPanel(new GridLayout(1, 2));
-    outputPanel = new JPanel(new GridLayout(4, 1));
     
     outputPanel.add(calculationLabel);
     outputPanel.add(outputLabel);
@@ -178,7 +166,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     footerPanel.add(buttonPanel);
   }
   
-  public void configureUserInputPanels() {
+  private void configureUserInputPanels() {
     JPanel gasPanel = new JPanel(new GridLayout(2, 2));
     JPanel tripPanel = new JPanel(new GridLayout(3, 2));
     JPanel vehiclePanel = new JPanel(new GridLayout(1, 2));
@@ -208,14 +196,14 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     userInputPanel.add(inputPanel);
   }
   
-  public void populateMenuOptions(Choice menu, String[] options) {
+  private void populateMenuOptions(Choice menu, String[] options) {
     for (String opt : options) {
       menu.add(opt);
     }
   };
   
   public void actionPerformed(ActionEvent e) {
-    vehicleType = vehicleDropdown.getSelectedItem();
+    String vehicleType = vehicleDropdown.getSelectedItem();
     
     try {
       tripDistance = Double.parseDouble(tripDistanceField.getText());
@@ -263,7 +251,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     fw.close();
   }
   
-  public void resetUserInputs() {
+  private void resetUserInputs() {
     tripDistanceField.setText("");
     gasCostField.setText("");
     vehicleDropdown.select(0);
@@ -272,7 +260,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     flashLabel.setText("");
   }
   
-  public void outputTravelersCost(double tripDistance, String vehicleType, double total) {
+  private void outputTravelersCost(double tripDistance, String vehicleType, double total) {
     calculationLabel.setText("$" + total);
   };
   
@@ -283,13 +271,12 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   
   private Double calculateOilChangeCost(double distance) {
     int numberOfOilChanges = 0;
-    double singleOilChangeCost = 30.00;
-    double totalOilChangeCost = 0.00;
     final int OILCHANGEFREQUENCY = 3000;
-    
-    numberOfOilChanges = (int) Math.floor(distance / OILCHANGEFREQUENCY);
+    final double singleOilChangeCost = 30.00;
+    double totalOilChangeCost = 0.00;
     
     if (tripDistance >= OILCHANGEFREQUENCY) {
+      numberOfOilChanges = (int) Math.floor(distance / OILCHANGEFREQUENCY);
       totalOilChangeCost = numberOfOilChanges * singleOilChangeCost;
     }
     
@@ -297,26 +284,13 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   }
   
   private void setGasolineCost(String gasolineType) {
-    Double costPerGallon = null;
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("Leaded", "2.50");
+    map.put("Unleaded", "2.90");
+    map.put("Super Unleaded", "3.00");
+    map.put("Diesel", "4.00");
     
-    switch (gasolineType) {
-    case "Leaded":
-      gasCostField.setText("2.50");
-      break;
-    case "Unleaded":
-      gasCostField.setText("2.90");
-      break;
-    case "Super Unleaded":
-      gasCostField.setText("3.00");
-      break;
-    case "Diesel":
-      gasCostField.setText("4.00");
-      break;
-    default:
-      gasCostField.setText("0.00");
-    }
-    
-    // return costPerGallon;
+    gasCostField.setText(map.get(gasolineType));
   }
   
   @Override
