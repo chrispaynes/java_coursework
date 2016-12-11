@@ -12,6 +12,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JApplet;
@@ -58,6 +61,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   Label vehicleTypeLabel          = new Label("Vehicle Type ", Label.RIGHT);
   Label gasolineTypeLabel         = new Label("gasolineType ", Label.RIGHT);
   Label travelCostLabel           = new Label("Your estimated Travel Cost is:", Label.CENTER);
+  Label flashLabel                = new Label("", Label.CENTER);
   Label outputLabel               = new Label("Click the Submit button to see your total travel cost", Label.CENTER);
   Label calculationLabel          = new Label();
   Label gasCostLabel              = new Label("Cost of Gas/Gallon ", Label.RIGHT);
@@ -67,7 +71,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   JTextField gasCostField      = new JTextField(10);
   TextField  tripDistanceField = new TextField(10);
   
-  Button saveButton   = new Button("Save Calculation");
+  Button saveButton   = new Button("Save Travel Record");
   Button submitButton = new Button("Submit");
   Button clearButton  = new Button("Clear");
   
@@ -85,7 +89,33 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   public void init() {
     jf = new JFrame();
     jf.setLayout(new GridLayout(3, 1));
+    milesPerGallon = 15.00;
     
+    setLook();
+    populateMenuOptions(gasDropdown, gasOptions);
+    populateMenuOptions(vehicleDropdown, vehicleOptions);
+    populateMenuOptions(beginningLocationsDropdown, beginningLocationsOptions);
+    populateMenuOptions(destinationLocationsDropdown, destinationLocationsOptions);
+    
+    configureHeaderPanel();
+    configureUserInputPanels();
+    configureFooterPanel();
+    
+    jf.add(headerPanel);
+    jf.add(userInputPanel);
+    jf.add(footerPanel);
+    
+    jf.pack();
+    jf.setVisible(true);
+    
+    saveButton.addActionListener(this);
+    submitButton.addActionListener(this);
+    clearButton.addActionListener(this);
+    vehicleDropdown.addItemListener(this);
+    gasDropdown.addItemListener(this);
+  }
+  
+  private void setLook() {
     try {
       UIManager.setLookAndFeel(LOOKANDFEEL);
     } catch (ClassNotFoundException cnfe) {
@@ -106,31 +136,7 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
       System.err.println("The requested look and feel: " + LOOKANDFEEL + " is not present on your system");
       System.err.println("Using the default look and feel.");
     }
-    
-    milesPerGallon = 15.00;
-    
-    populateMenuOptions(gasDropdown, gasOptions);
-    populateMenuOptions(vehicleDropdown, vehicleOptions);
-    populateMenuOptions(beginningLocationsDropdown, beginningLocationsOptions);
-    populateMenuOptions(destinationLocationsDropdown, destinationLocationsOptions);
-    
-    configureHeaderPanel();
-    configureUserInputPanels();
-    configureFooterPanel();
-    
-    jf.add(headerPanel);
-    jf.add(userInputPanel);
-    jf.add(footerPanel);
-    
-    jf.pack();
-    jf.setVisible(true);
-    
-    submitButton.addActionListener(this);
-    clearButton.addActionListener(this);
-    vehicleDropdown.addItemListener(this);
-    gasDropdown.addItemListener(this);
-    
-  }
+  };
   
   public void configureHeaderPanel() {
     headerPanel = new JPanel(new GridLayout(3, 1));
@@ -151,11 +157,12 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   public void configureFooterPanel() {
     footerPanel = new JPanel(new GridLayout(3, 1));
     buttonPanel = new JPanel(new GridLayout(1, 2));
-    outputPanel = new JPanel(new GridLayout(3, 1));
+    outputPanel = new JPanel(new GridLayout(4, 1));
     
     outputPanel.add(calculationLabel);
     outputPanel.add(outputLabel);
     outputPanel.add(travelCostLabel);
+    outputPanel.add(flashLabel);
     
     calculationLabel.setAlignment(WIDTH);
     
@@ -169,7 +176,6 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
     footerPanel.add(outputPanel);
     footerPanel.add(calculationLabel);
     footerPanel.add(buttonPanel);
-    
   }
   
   public void configureUserInputPanels() {
@@ -209,66 +215,115 @@ public class GasolineCalculator extends JApplet implements ActionListener, ItemL
   };
   
   public void actionPerformed(ActionEvent e) {
-    if (e.getSource() == submitButton) {
+    vehicleType = vehicleDropdown.getSelectedItem();
+    
+    try {
       tripDistance = Double.parseDouble(tripDistanceField.getText());
-      vehicleType = vehicleDropdown.getSelectedItem();
-      gasolineType = gasDropdown.getSelectedItem();
+    } catch (NumberFormatException nfe) {
+    }
+    
+    try {
       gasCost = Double.parseDouble(gasCostField.getText());
-      resetUserInputs();
-      
+    } catch (NumberFormatException nfe) {
+    }
+    
+    if (e.getSource() == submitButton) {
+      total = calculateTravelersCost(tripDistance, milesPerGallon, gasCost);
+      outputTravelersCost(tripDistance, vehicleType, total);
     } else if (e.getSource() == clearButton) {
       resetUserInputs();
+    } else if (e.getSource() == saveButton) {
+      total = calculateTravelersCost(tripDistance, milesPerGallon, gasCost);
+      outputTravelersCost(tripDistance, vehicleType, total);
+      try {
+        writeDataToFile();
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+      }
     }
-    total = calculateTravelersCost(tripDistance, milesPerGallon, gasCost);
-    outputTravelersCost(tripDistance, vehicleType, total);
+  }
+  
+  private void writeDataToFile() throws IOException {
+    FileWriter fw = null;
+    File textDB = new File("travelrecords.txt");
+    textDB.getAbsolutePath();
+    try {
+      fw = new FileWriter(textDB, true);
+      fw.write("Hello World1\n");
+      // Trip Date
+      // Starting Location: get
+      // Destination = get
+      // Approximate Miles = get
+      // Cost
+      flashLabel.setText("Successfully saved your travel record to " + textDB.getPath());
+    } catch (IOException e) {
+      flashLabel.setText("Could not save travel record to a file");
+      e.printStackTrace();
+    }
+    fw.close();
   }
   
   public void resetUserInputs() {
-    tripDistanceField.setText(" ");
-    gasCostField.setText(" ");
+    tripDistanceField.setText("");
+    gasCostField.setText("");
     vehicleDropdown.select(0);
     gasDropdown.select(0);
-    calculationLabel.setText(" ");
+    calculationLabel.setText("");
+    flashLabel.setText("");
   }
   
   public void outputTravelersCost(double tripDistance, String vehicleType, double total) {
-    // calculationLabel.setText("<html>Your total travel cost for driving " +
-    // tripDistance + " miles<br>" + " in a "
-    // + vehicleType + " is $" + total + ".</html>");
     calculationLabel.setText("$" + total);
   };
   
-  public Double calculateTravelersCost(double tripDistance, double milesPerGallon, double gasCost) {
-    return (tripDistance / milesPerGallon) * gasCost;
+  private Double calculateTravelersCost(double tripDistance, double milesPerGallon, double gasCost) {
+    Double totalOilChangeCost = calculateOilChangeCost(tripDistance);
+    return ((tripDistance / milesPerGallon) * gasCost) + totalOilChangeCost;
   };
   
-  public Double setGasolineCost(String gasolineType) {
-    Double costPerGallon;
+  private Double calculateOilChangeCost(double distance) {
+    int numberOfOilChanges = 0;
+    double singleOilChangeCost = 30.00;
+    double totalOilChangeCost = 0.00;
+    final int OILCHANGEFREQUENCY = 3000;
     
-    switch (gasolineType) {
-    case "leaded":
-      costPerGallon = 2.50;
-      break;
-    case "unleaded":
-      costPerGallon = 2.90;
-      break;
-    case "super unleaded":
-      costPerGallon = 3.00;
-      break;
-    case "diesel":
-      costPerGallon = 4.00;
-      break;
-    default:
-      costPerGallon = 0.00;
+    numberOfOilChanges = (int) Math.floor(distance / OILCHANGEFREQUENCY);
+    
+    if (tripDistance >= OILCHANGEFREQUENCY) {
+      totalOilChangeCost = numberOfOilChanges * singleOilChangeCost;
     }
     
-    return costPerGallon;
+    return totalOilChangeCost;
+  }
+  
+  private void setGasolineCost(String gasolineType) {
+    Double costPerGallon = null;
+    
+    switch (gasolineType) {
+    case "Leaded":
+      gasCostField.setText("2.50");
+      break;
+    case "Unleaded":
+      gasCostField.setText("2.90");
+      break;
+    case "Super Unleaded":
+      gasCostField.setText("3.00");
+      break;
+    case "Diesel":
+      gasCostField.setText("4.00");
+      break;
+    default:
+      gasCostField.setText("0.00");
+    }
+    
+    // return costPerGallon;
   }
   
   @Override
   public void itemStateChanged(ItemEvent e) {
-    // TODO Auto-generated method stub
-    
+    if (e.getSource() == gasDropdown) {
+      setGasolineCost(gasDropdown.getSelectedItem());
+    }
   }
   
 }
